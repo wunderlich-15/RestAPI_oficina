@@ -32,3 +32,82 @@ Para rodar este projeto, a máquina precisa ter apenas:
 
 - Testar a API
   <p>Utilize a Api CLient para realizar as requisições a API</p>
+
+- Endpoints
+  <p> Os endpoints suportam Post, Put, Delete e Get sendo o Put e Delete necessário passar o ID na url como por exemplo </p>
+  
+  ``` http://localhost:8080/api/ordens-servico?id=1 ```
+
+  - Clientes
+    ``` http://localhost:8080/api/clientes ```
+
+    Corpo de requisição
+
+    ```
+        {
+          "nome": "Carlos Silva",
+          "cpf": "123.456.789-00",
+          "telefone": "(11) 99999-1111"
+        }
+      
+    ```
+
+    
+
+  - Veiculos
+    ``` http://localhost:8080/api/veiculos ```
+
+    
+    Corpo de requisição
+
+    ```
+        {
+          "placa": "XYZ-9876",
+          "modelo": "Corolla",
+          "marca": "Toyota",
+          "ano": 2020,
+          "clienteId": 1
+        }
+    ```
+
+  - Ordens
+    ``` http://localhost:8080/api/ordens-servico ```
+
+    
+    Corpo de requisição
+
+    ```
+        {
+          "descricaoProblema": "Revisão de 50.000 km",
+          "veiculoId": 1,
+          "valorTotal": 50.00
+        }
+    ```
+
+  - Serviços
+    ``` http://localhost:8080/api/servicos ```
+
+    
+    Corpo de requisição
+
+    ```
+      {
+        "nomeServico": "Alinhamento e Balanceamento",
+        "valorBase": 120.00
+      }
+      
+    ```
+
+  - Adicionar Serviços a Ordem
+    ``` http://localhost:8080/api/itens-servico ```
+
+    
+    Corpo de requisição
+
+    ```
+    {
+      "osId": 1,
+      "servicoId": 1
+    }
+    
+    ```
