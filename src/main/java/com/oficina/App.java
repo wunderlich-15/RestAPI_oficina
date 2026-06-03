@@ -1,6 +1,6 @@
 package com.oficina;
 
-import com.oficina.config.DatabaseSetup; // <-- NOVO IMPORT AQUI
+import com.oficina.config.DatabaseSetup;
 import com.oficina.controller.ClienteHandler;
 import com.oficina.controller.ItemServicoHandler;
 import com.oficina.controller.OrdemServicoHandler;
@@ -12,7 +12,6 @@ import java.net.InetSocketAddress;
 public class App {
     public static void main(String[] args) {
         
-        // 1. GERA O BANCO DE DADOS E AS TABELAS ANTES DO SERVIDOR SUBIR
         DatabaseSetup.inicializarBanco();
         
         try {
@@ -26,7 +25,6 @@ public class App {
 
             server.setExecutor(null);
             
-            // Ajustei a mensagem para ficar mais geral
             System.out.println("Servidor API Oficina rodando em: http://localhost:8080/api/clientes");
             server.start();
 
