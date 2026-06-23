@@ -20,7 +20,6 @@ public class ClienteHandler implements HttpHandler {
         String path = exchange.getRequestURI().getPath();
         
         try {
-            // Roteamento simples baseado no método HTTP
             if ("GET".equals(method)) {
                 handleGet(exchange);
             } else if ("POST".equals(method)) {
@@ -63,28 +62,24 @@ public class ClienteHandler implements HttpHandler {
         }
     }
     private void handleGet(HttpExchange exchange) throws IOException, java.sql.SQLException {
-        String query = exchange.getRequestURI().getQuery(); // Ex: "id=1" ou null
+        String query = exchange.getRequestURI().getQuery();
 
         if (query != null && query.contains("id=")) {
-            // --- MODO: BUSCAR POR ID ---
             String valorId = query.split("id=")[1].split("&")[0];
             Long id = Long.parseLong(valorId);
             
-            Cliente cliente = dao.buscarPorId(id); // Certifique-se que este método existe no seu DAO
-            
+            Cliente cliente = dao.buscarPorId(id);
             if (cliente != null) {
                 enviarResposta(exchange, cliente);
             } else {
-                exchange.sendResponseHeaders(404, -1); // Cliente não encontrado
+                exchange.sendResponseHeaders(404, -1);
             }
         } else {
-            // --- MODO: LISTAR TODOS ---
             List<Cliente> clientes = dao.listarTodos();
             enviarResposta(exchange, clientes);
         }
     }
 
-    // Método auxiliar para manter seu código limpo e evitar repetição
     private void enviarResposta(HttpExchange exchange, Object objeto) throws IOException {
         String json = objectMapper.writeValueAsString(objeto);
         exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
