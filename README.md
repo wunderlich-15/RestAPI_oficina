@@ -114,5 +114,5 @@ Para rodar este projeto, a máquina precisa ter apenas:
 
 
 ## Diagramas do projeto
-![Diagramas](Bancodedados.png)
-![Diagramas](UML.png)
+<img width="763" height="492" alt="Image" src="https://github.com/user-attachments/assets/fc01bafa-816b-463c-b8ba-6236a2037b6a" />
+<img width="717" height="742" alt="Image" src="https://github.com/user-attachments/assets/bf8fcae9-8a5d-493f-b7ac-0532f4b57e18" />
