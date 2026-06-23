@@ -25,7 +25,7 @@ public class App {
 
             server.setExecutor(null);
             
-            System.out.println("Servidor API Oficina rodando em: http://localhost:8080/api/clientes");
+            System.out.println("Servidor API Oficina rodando em: http://localhost:8080/api");
             server.start();
 
         } catch (Exception e) {

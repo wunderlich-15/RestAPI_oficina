@@ -35,7 +35,7 @@ public class ServicoHandler implements HttpHandler {
                     handlePut(exchange);
                     break;
                 case "DELETE":
-                    handleDelete(exchange, path);
+                    handleDelete(exchange);
                     break;
                 default:
                     enviarResposta(exchange, 405, "{\"erro\": \"Método não permitido\"}");
@@ -49,11 +49,32 @@ public class ServicoHandler implements HttpHandler {
             enviarResposta(exchange, 400, "{\"erro\": \"Erro na requisição: " + e.getMessage() + "\"}");
         }
     }
-
     private void handleGet(HttpExchange exchange) throws IOException, SQLException {
-        List<Servico> servicos = dao.listarTodos();
-        String json = objectMapper.writeValueAsString(servicos);
-        enviarResposta(exchange, 200, json);
+        String query = exchange.getRequestURI().getQuery(); 
+
+        if (query != null && query.contains("id=")) {
+            try {
+                String valorId = query.split("id=")[1].split("&")[0];
+                Long id = Long.parseLong(valorId);
+                
+                Servico servico = dao.buscarPorId(id); 
+                
+                if (servico != null) {
+                    enviarResposta(exchange, 200, objectMapper.writeValueAsString(servico));
+                } else {
+                    
+                    String erro = "{\"erro\": \"Serviço não encontrado\"}";
+                    enviarResposta(exchange, 404, erro);
+                }
+            } catch (NumberFormatException e) {
+                String erro = "{\"erro\": \"ID inválido\"}";
+                enviarResposta(exchange, 400, erro);
+            }
+        } else {
+            List<Servico> servicos = dao.listarTodos();
+            String json = objectMapper.writeValueAsString(servicos);
+            enviarResposta(exchange, 200, json);
+        }
     }
 
     private void handlePost(HttpExchange exchange) throws IOException, SQLException {
@@ -79,19 +100,27 @@ public class ServicoHandler implements HttpHandler {
         enviarResposta(exchange, 200, json);
     }
 
-    private void handleDelete(HttpExchange exchange, String path) throws IOException, SQLException {
-        String[] parts = path.split("/");
-        
-        if (parts.length >= 4) { 
+    private void handleDelete(HttpExchange exchange) throws IOException, SQLException {
+        String query = exchange.getRequestURI().getQuery(); 
+
+    
+        if (query != null && query.contains("id=")) {
             try {
-                Long id = Long.parseLong(parts[3]);
+                
+                String valorId = query.split("id=")[1].split("&")[0];
+                Long id = Long.parseLong(valorId);
+                
                 dao.deletar(id);
+                
                 enviarResposta(exchange, 200, "{\"mensagem\": \"Serviço excluído com sucesso\"}");
+                
             } catch (NumberFormatException e) {
-                enviarResposta(exchange, 400, "{\"erro\": \"ID inválido na URL\"}");
+                enviarResposta(exchange, 400, "{\"erro\": \"Formato de ID inválido\"}");
+            } catch (Exception e) {
+                enviarResposta(exchange, 500, "{\"erro\": \"Erro ao deletar: " + e.getMessage() + "\"}");
             }
         } else {
-            enviarResposta(exchange, 400, "{\"erro\": \"ID não fornecido na URL\"}");
+            enviarResposta(exchange, 400, "{\"erro\": \"ID não fornecido na URL. Use ?id=X\"}");
         }
     }
 

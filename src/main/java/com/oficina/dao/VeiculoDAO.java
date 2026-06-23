@@ -1,12 +1,13 @@
 package com.oficina.dao;
 
 import com.oficina.config.DatabaseConfig;
+import com.oficina.model.Cliente;
 import com.oficina.model.Veiculo;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VeiculoDAO {
+public class VeiculoDAO implements CrudDAO<Veiculo>{
 
     public void salvar(Veiculo veiculo) throws SQLException {
         String sql = "INSERT INTO veiculos (placa, modelo, marca, ano, cliente_id) VALUES (?, ?, ?, ?, ?)";
@@ -63,6 +64,28 @@ public class VeiculoDAO {
             
             stmt.executeUpdate();
         }
+    }
+
+        public List<Veiculo> listarTodos() throws SQLException {
+        String sql = "SELECT * FROM veiculos";
+        List<Veiculo> veiculos = new ArrayList<>();
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Veiculo v = new Veiculo();
+                v.setId(rs.getLong("id"));
+                v.setPlaca(rs.getString("placa"));
+                v.setModelo(rs.getString("modelo"));
+                v.setMarca(rs.getString("marca"));
+                v.setAno(rs.getInt("ano"));
+                v.setClienteId(rs.getLong("cliente_id"));
+                veiculos.add(v);
+            }
+        }
+        return veiculos;
     }
 
     public void deletar(Long id) throws SQLException {

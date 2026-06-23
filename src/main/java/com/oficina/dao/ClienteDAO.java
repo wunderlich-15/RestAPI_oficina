@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ClienteDAO {
+public class ClienteDAO implements CrudDAO<Cliente>{
 
     public void salvar(Cliente cliente) throws SQLException {
         String sql = "INSERT INTO clientes (nome, cpf, telefone) VALUES (?, ?, ?)";
@@ -48,6 +48,27 @@ public class ClienteDAO {
             }
         }
         return clientes;
+    }
+
+    public Cliente buscarPorId(Long id) throws SQLException {
+        String sql = "SELECT * FROM clientes WHERE id = ?";
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+            
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Cliente c = new Cliente();
+                    c.setId(rs.getLong("id"));
+                    c.setNome(rs.getString("nome"));
+                    c.setCpf(rs.getString("cpf"));
+                    c.setTelefone(rs.getString("telefone"));
+                    return c;
+                }
+            }
+        }
+    return null; 
     }
 
     public void atualizar(Cliente cliente) throws SQLException {

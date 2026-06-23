@@ -45,22 +45,50 @@ public class ClienteHandler implements HttpHandler {
     }
 
     private void handleDelete(HttpExchange exchange, String path) throws IOException, java.sql.SQLException {
-        String[] parts = path.split("/");
-        if (parts.length > 3) {
-            Long id = Long.parseLong(parts[3]);
-            dao.deletar(id);
-            exchange.sendResponseHeaders(204, -1);
+        String query = exchange.getRequestURI().getQuery();
+
+        if (query != null && query.contains("id=")) {
+            try {
+                String idString = query.split("id=")[1].split("&")[0];
+                Long id = Long.parseLong(idString);
+                
+                dao.deletar(id);
+                
+                exchange.sendResponseHeaders(204, -1);
+            } catch (NumberFormatException e) {
+                exchange.sendResponseHeaders(400, -1);
+            }
         } else {
             exchange.sendResponseHeaders(400, -1);
         }
     }
     private void handleGet(HttpExchange exchange) throws IOException, java.sql.SQLException {
-        List<Cliente> clientes = dao.listarTodos();
-        String json = objectMapper.writeValueAsString(clientes);
+        String query = exchange.getRequestURI().getQuery(); // Ex: "id=1" ou null
 
-        exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(200, json.length());
-        
+        if (query != null && query.contains("id=")) {
+            // --- MODO: BUSCAR POR ID ---
+            String valorId = query.split("id=")[1].split("&")[0];
+            Long id = Long.parseLong(valorId);
+            
+            Cliente cliente = dao.buscarPorId(id); // Certifique-se que este método existe no seu DAO
+            
+            if (cliente != null) {
+                enviarResposta(exchange, cliente);
+            } else {
+                exchange.sendResponseHeaders(404, -1); // Cliente não encontrado
+            }
+        } else {
+            // --- MODO: LISTAR TODOS ---
+            List<Cliente> clientes = dao.listarTodos();
+            enviarResposta(exchange, clientes);
+        }
+    }
+
+    // Método auxiliar para manter seu código limpo e evitar repetição
+    private void enviarResposta(HttpExchange exchange, Object objeto) throws IOException {
+        String json = objectMapper.writeValueAsString(objeto);
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
+        exchange.sendResponseHeaders(200, json.getBytes().length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(json.getBytes());
         }

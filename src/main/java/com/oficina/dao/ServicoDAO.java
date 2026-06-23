@@ -6,7 +6,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ServicoDAO {
+public class ServicoDAO implements CrudDAO<Servico> {
 
     public void salvar(Servico servico) throws SQLException {
         String sql = "INSERT INTO servicos (nome_servico, valor_base) VALUES (?, ?)";
@@ -39,6 +39,26 @@ public class ServicoDAO {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         }
+    }
+
+    public Servico buscarPorId(Long id) throws SQLException {
+        String sql = "SELECT * FROM servicos WHERE id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Servico s = new Servico();
+                    s.setId(rs.getLong("id"));
+                    s.setNomeServico(rs.getString("nome_servico"));
+                    s.setValorBase(rs.getBigDecimal("valor_base"));
+                    return s;
+                }
+            }
+        }
+        return null;
     }
 
     public void atualizar(Servico servico) throws SQLException {

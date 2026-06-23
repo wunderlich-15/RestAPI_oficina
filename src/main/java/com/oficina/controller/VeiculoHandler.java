@@ -43,6 +43,7 @@ public class VeiculoHandler implements HttpHandler {
         String query = exchange.getRequestURI().getQuery();
         Long clienteId = null;
 
+       
         if (query != null && query.contains("clienteId=")) {
             String[] pairs = query.split("&");
             for (String pair : pairs) {
@@ -53,23 +54,27 @@ public class VeiculoHandler implements HttpHandler {
             }
         }
 
-        if (clienteId == null) {
-            System.out.println("Aviso: Filtro 'clienteId' não foi enviado no GET.");
-            exchange.sendResponseHeaders(400, -1);
-            return;
+        
+        if (clienteId != null) {
+            
+            List<Veiculo> veiculos = dao.listarPorCliente(clienteId);
+            enviarResposta(exchange, veiculos);
+        } else {
+            
+            List<Veiculo> todosVeiculos = dao.listarTodos();
+            enviarResposta(exchange, todosVeiculos);
         }
+    }
 
-        List<Veiculo> veiculos = dao.listarPorCliente(clienteId);
-        String json = objectMapper.writeValueAsString(veiculos);
-
-        exchange.getResponseHeaders().set("Content-Type", "application/json");
-        exchange.sendResponseHeaders(200, json.length());
-
+    
+    private void enviarResposta(HttpExchange exchange, Object objeto) throws IOException {
+        String json = objectMapper.writeValueAsString(objeto);
+        exchange.getResponseHeaders().set("Content-Type", "application/json; charset=UTF-8");
+        exchange.sendResponseHeaders(200, json.getBytes().length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(json.getBytes());
         }
     }
-
     private void handlePost(HttpExchange exchange) throws IOException, SQLException {
         byte[] requestBody = exchange.getRequestBody().readAllBytes();
         Veiculo veiculo = objectMapper.readValue(requestBody, Veiculo.class);
@@ -97,15 +102,23 @@ public class VeiculoHandler implements HttpHandler {
         dao.atualizar(veiculo);
         exchange.sendResponseHeaders(204, -1); 
     }
+    private void handleDelete(HttpExchange exchange, String path) throws IOException, java.sql.SQLException {
+        String query = exchange.getRequestURI().getQuery(); // Pega a parte do "?id=1"
 
-    private void handleDelete(HttpExchange exchange, String path) throws IOException, SQLException {
-        String[] parts = path.split("/");
-        if (parts.length > 3) {
-            Long id = Long.parseLong(parts[3]);
-            dao.deletar(id);
-            exchange.sendResponseHeaders(204, -1); 
+        if (query != null && query.contains("id=")) {
+            try {
+                // Extrai o número depois do "id="
+                String idString = query.split("id=")[1].split("&")[0];
+                Long id = Long.parseLong(idString);
+                
+                dao.deletar(id);
+                
+                exchange.sendResponseHeaders(204, -1);
+            } catch (NumberFormatException e) {
+                exchange.sendResponseHeaders(400, -1);
+            }
         } else {
-            exchange.sendResponseHeaders(400, -1); 
+            exchange.sendResponseHeaders(400, -1);
         }
     }
 }
