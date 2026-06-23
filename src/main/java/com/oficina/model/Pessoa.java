@@ -4,10 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data 
 @AllArgsConstructor 
 @NoArgsConstructor
-public class Cliente extends Pessoa{
-    private String cpf;
-    private String telefone;
+public abstract class Pessoa {
+    protected Long id;
+    protected String nome;
 }

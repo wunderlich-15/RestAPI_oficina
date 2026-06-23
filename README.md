@@ -111,3 +111,8 @@ Para rodar este projeto, a máquina precisa ter apenas:
     }
     
     ```
+
+
+## Diagramas do projeto
+![Diagramas](Bancodedados.png)
+![Diagramas](UML.png)
