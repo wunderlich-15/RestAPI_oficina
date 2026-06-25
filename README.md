@@ -170,5 +170,5 @@ Depois execute a aplicação com:
 
 
 ## Diagramas do projeto
-<img width="763" height="492" alt="Image" src="https://github.com/user-attachments/assets/fc01bafa-816b-463c-b8ba-6236a2037b6a" />
-<img width="717" height="742" alt="Image" src="https://github.com/user-attachments/assets/bf8fcae9-8a5d-493f-b7ac-0532f4b57e18" />
+<img width="1254" height="1254" alt="Image" src="https://github.com/user-attachments/assets/692683ef-4073-4266-aba9-14bdb9f23149" />
+<img width="1254" height="1254" alt="Image" src="https://github.com/user-attachments/assets/49a5906d-606f-4463-bf90-619dc9c4967b" />
