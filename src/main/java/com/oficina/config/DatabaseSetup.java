@@ -26,6 +26,14 @@ public class DatabaseSetup {
                 marca TEXT NOT NULL,
                 ano INTEGER,
                 cliente_id INTEGER NOT NULL,
+
+                tipo TEXT NOT NULL,
+
+                numero_portas INTEGER,
+                chassi TEXT,
+
+                cilindradas INTEGER,
+                tipo_moto TEXT,
                 FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
             );
             """,
@@ -46,6 +54,7 @@ public class DatabaseSetup {
                 data_abertura DATETIME NOT NULL DEFAULT (datetime('now', 'localtime')),
                 data_fechamento DATETIME,
                 valor_total DECIMAL(10, 2) DEFAULT 0.00,
+                valor_inicial DECIMAL(10, 2) DEFAULT 0.00,
                 veiculo_id INTEGER NOT NULL,
                 FOREIGN KEY (veiculo_id) REFERENCES veiculos(id) ON DELETE CASCADE
             );

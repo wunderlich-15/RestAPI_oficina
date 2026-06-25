@@ -1,7 +1,10 @@
 package com.oficina.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.oficina.dao.VeiculoDAO;
+import com.oficina.model.Carro;
+import com.oficina.model.Moto;
 import com.oficina.model.Veiculo;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -41,29 +44,48 @@ public class VeiculoHandler implements HttpHandler {
 
     private void handleGet(HttpExchange exchange, String path) throws IOException, SQLException {
         String query = exchange.getRequestURI().getQuery();
+
+        Long id = null;
         Long clienteId = null;
 
-       
-        if (query != null && query.contains("clienteId=")) {
+        if (query != null) {
             String[] pairs = query.split("&");
+
             for (String pair : pairs) {
                 String[] kv = pair.split("=");
-                if (kv.length > 1 && "clienteId".equals(kv[0])) {
-                    clienteId = Long.parseLong(kv[1]);
+
+                if (kv.length > 1) {
+                    if ("id".equals(kv[0])) {
+                        id = Long.parseLong(kv[1]);
+                    }
+
+                    if ("clienteId".equals(kv[0])) {
+                        clienteId = Long.parseLong(kv[1]);
+                    }
                 }
             }
         }
 
-        
+        if (id != null) {
+            Veiculo veiculo = dao.buscarPorId(id);
+
+            if (veiculo == null) {
+                exchange.sendResponseHeaders(404, -1);
+                return;
+            }
+
+            enviarResposta(exchange, veiculo);
+            return;
+        }
+
         if (clienteId != null) {
-            
             List<Veiculo> veiculos = dao.listarPorCliente(clienteId);
             enviarResposta(exchange, veiculos);
-        } else {
-            
-            List<Veiculo> todosVeiculos = dao.listarTodos();
-            enviarResposta(exchange, todosVeiculos);
+            return;
         }
+
+        List<Veiculo> todosVeiculos = dao.listarTodos();
+        enviarResposta(exchange, todosVeiculos);
     }
 
     
@@ -77,7 +99,8 @@ public class VeiculoHandler implements HttpHandler {
     }
     private void handlePost(HttpExchange exchange) throws IOException, SQLException {
         byte[] requestBody = exchange.getRequestBody().readAllBytes();
-        Veiculo veiculo = objectMapper.readValue(requestBody, Veiculo.class);
+
+        Veiculo veiculo = criarVeiculo(requestBody);
 
         dao.salvar(veiculo);
         String json = objectMapper.writeValueAsString(veiculo);
@@ -92,7 +115,8 @@ public class VeiculoHandler implements HttpHandler {
 
     private void handlePut(HttpExchange exchange) throws IOException, SQLException {
         byte[] requestBody = exchange.getRequestBody().readAllBytes();
-        Veiculo veiculo = objectMapper.readValue(requestBody, Veiculo.class);
+
+        Veiculo veiculo = criarVeiculo(requestBody);
 
         if (veiculo.getId() == null) {
             exchange.sendResponseHeaders(400, -1); 
@@ -121,4 +145,37 @@ public class VeiculoHandler implements HttpHandler {
             exchange.sendResponseHeaders(400, -1);
         }
     }
+
+    private Veiculo criarVeiculo(byte[] requestBody)
+        throws IOException {
+
+    JsonNode json =
+            objectMapper.readTree(requestBody);
+
+    String tipo =
+            json.get("tipo").asText();
+
+    ((com.fasterxml.jackson.databind.node.ObjectNode) json)
+            .remove("tipo");
+
+    if ("CARRO".equalsIgnoreCase(tipo)) {
+
+        return objectMapper.treeToValue(
+                json,
+                Carro.class
+        );
+    }
+
+    if ("MOTO".equalsIgnoreCase(tipo)) {
+
+        return objectMapper.treeToValue(
+                json,
+                Moto.class
+        );
+    }
+
+    throw new IllegalArgumentException(
+            "Tipo de veículo inválido"
+    );
+}
 }

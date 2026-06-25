@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.oficina.dao.OrdemServicoDAO;
 import com.oficina.model.OrdemServico;
+import com.oficina.dao.ItemServicoDAO;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,6 +16,7 @@ public class OrdemServicoHandler implements HttpHandler {
 
     private final OrdemServicoDAO osDAO = new OrdemServicoDAO();
     private final ObjectMapper mapper = new ObjectMapper();
+    private final ItemServicoDAO itemServicoDAO = new ItemServicoDAO();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -101,9 +103,44 @@ public class OrdemServicoHandler implements HttpHandler {
             return;
         }
 
+        OrdemServico osExistente = osDAO.buscarPorId(os.getId());
+
+        if (osExistente == null) {
+            enviarResposta(exchange, 404, "{\"erro\": \"Ordem de Serviço não encontrada.\"}");
+            return;
+        }
+
+        if (os.getDescricaoProblema() == null) {
+            os.setDescricaoProblema(osExistente.getDescricaoProblema());
+        }
+
+        if (os.getStatus() == null) {
+            os.setStatus(osExistente.getStatus());
+        }
+
+        if (os.getVeiculoId() == null) {
+            os.setVeiculoId(osExistente.getVeiculoId());
+        }
+
+        if (os.getValorInicial() == null) {
+            os.setValorInicial(osExistente.getValorInicial());
+        }
+
         osDAO.atualizar(os);
-        enviarResposta(exchange, 200, "{\"mensagem\": \"Ordem de Serviço atualizada com sucesso!\"}");
-    }
+
+        if (os.getServicosIds() != null) {
+            itemServicoDAO.substituirServicosDaOs(
+                    os.getId(),
+                    os.getServicosIds()
+            );
+        }
+
+        osDAO.recalcularValorTotal(os.getId());
+
+        OrdemServico osAtualizada = osDAO.buscarPorId(os.getId());
+
+        enviarResposta(exchange, 200, mapper.writeValueAsString(osAtualizada));
+    }   
 
     private void tratarDelete(HttpExchange exchange) throws SQLException, IOException {
         String query = exchange.getRequestURI().getQuery();

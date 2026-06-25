@@ -10,7 +10,6 @@ import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -63,51 +62,48 @@ public class ItemServicoHandler implements HttpHandler {
 
     private void handlePost(HttpExchange exchange) throws IOException, SQLException {
         ItemServico item = mapper.readValue(exchange.getRequestBody(), ItemServico.class);
-    
-
-        BigDecimal preco = itemDao.buscarPrecoServico(item.getServicoId());
-        
 
         itemDao.adicionarServicoOs(item);
-        
 
-        osDao.atualizarValorTotalComItem(item.getOsId(), preco, true);
-        
-        enviarResposta(exchange, 201, "{\"mensagem\": \"Serviço adicionado e valor somado!\"}");
+        osDao.recalcularValorTotal(item.getOsId());
 
+        enviarResposta(exchange, 201, "{\"mensagem\": \"Serviço adicionado e valor recalculado!\"}");
     }
 
     private void handleDelete(HttpExchange exchange) throws IOException, SQLException {
-        Map<String, String> params = getQueryParams(exchange.getRequestURI());
-        Long osId = Long.parseLong(params.get("osId"));
-        Long servId = Long.parseLong(params.get("servicoId"));
+    Map<String, String> params = getQueryParams(exchange.getRequestURI());
 
+    Long osId = Long.parseLong(params.get("osId"));
+    Long servId = Long.parseLong(params.get("servicoId"));
 
-        BigDecimal preco = itemDao.buscarPrecoServico(servId);
-        
-        itemDao.removerServicoOs(osId, servId);
-        
+    itemDao.removerServicoOs(osId, servId);
 
-        osDao.atualizarValorTotalComItem(osId, preco, false);
-        
-        enviarResposta(exchange, 200, "{\"mensagem\": \"Serviço removido e valor subtraído!\"}");
-    }
+    osDao.recalcularValorTotal(osId);
 
-    private Map<String, String> getQueryParams(URI uri) {
-        Map<String, String> queryParams = new HashMap<>();
-        String query = uri.getQuery();
-        if (query != null) {
-            for (String param : query.split("&")) {
-                String[] entry = param.split("=");
-                if (entry.length > 1) queryParams.put(entry[0], entry[1]);
-            }
-        }
-        return queryParams;
-    }
+    enviarResposta(exchange, 200, "{\"mensagem\": \"Serviço removido e valor recalculado!\"}");
+}   
 
     private void enviarResposta(HttpExchange exchange, int status, String json) throws IOException {
         byte[] bytes = json.getBytes("UTF-8");
         exchange.sendResponseHeaders(status, bytes.length);
         try (OutputStream os = exchange.getResponseBody()) { os.write(bytes); }
+    }
+
+    private Map<String, String> getQueryParams(URI uri) {
+        Map<String, String> queryParams = new HashMap<>();
+
+        String query = uri.getQuery();
+
+        if (query != null) {
+            for (String param : query.split("&")) {
+                String[] entry = param.split("=");
+
+                if (entry.length > 1) {
+                    queryParams.put(entry[0], entry[1]);
+                }
+            }
+        }
+
+        return queryParams;
     }
 }
