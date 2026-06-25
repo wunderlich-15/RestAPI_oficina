@@ -39,27 +39,27 @@ Para rodar este projeto, a máquina precisa ter apenas:
 
 <p> Na pasta raiz do projeto, onde está localizado o arquivo pom.xml, execute:</p>
 
-´´´
+```
 
   mvn clean compile
 
-´´´
+```
 
 Depois execute a aplicação com:
 
-´´´
+```
 
   mvn exec:java -Dexec.mainClass="com.oficina.App"
 
-´´´
+```
 
 - Ao iniciar corretamente, o terminal deverá exibir uma mensagem semelhante a:
 
-´´´
+```
 
   Servidor API Oficina rodando em: http://localhost:8080/api
 
-´´´
+```
 
 - A API ficará disponível em:
 
@@ -71,21 +71,21 @@ Depois execute a aplicação com:
 
 <p> Na pasta raiz do projeto, execute: </p>
 
-´´´
+```
 
   mvn clean package
 
-´´´
+```
 
 <p> Após o build, o arquivo será gerado dentro da pasta target. </p>
 
 - Para executar o projeto pelo .jar, use:
 
-´´´
+```
 
   java -jar target/api-oficina-1.jar
 
-´´´
+```
 
 <p> Após executar o comando, a API será iniciada na porta 8080.</p>
 
